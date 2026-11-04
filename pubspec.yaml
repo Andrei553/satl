@@ -1,0 +1,28 @@
+name: satl
+description: "SATL — простой и красочный клиент для Home Assistant с режимом киоска."
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.0
+  shared_preferences: ^2.3.0
+  flutter_inappwebview: ^6.1.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+# Локальная копия Android-части flutter_inappwebview с исправленным
+# proguard-файлом: стабильная версия плагина несовместима с AGP из Flutter 3.47.
+dependency_overrides:
+  flutter_inappwebview_android:
+    path: plugins/flutter_inappwebview_android
+
+flutter:
+  uses-material-design: true

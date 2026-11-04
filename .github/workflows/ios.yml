@@ -1,0 +1,56 @@
+name: iOS build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 60
+
+    steps:
+      - name: Забрать исходники
+        uses: actions/checkout@v4
+
+      - name: Установить Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.9
+          channel: stable
+          cache: true
+
+      - name: Зависимости
+        run: flutter pub get
+
+      - name: Собрать приложение (без подписи)
+        run: flutter build ios --release --no-codesign
+
+      - name: Упаковать в .ipa
+        run: |
+          cd build/ios/iphoneos
+          mkdir -p Payload
+          cp -R Runner.app Payload/
+          zip -qry SATL-unsigned.ipa Payload
+          ls -lh SATL-unsigned.ipa
+
+      - name: Отдать файл как артефакт
+        uses: actions/upload-artifact@v4
+        with:
+          name: SATL-ipa
+          path: build/ios/iphoneos/SATL-unsigned.ipa
+          retention-days: 90
+
+      - name: Создать релиз со ссылкой для скачивания
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: SATL для iPhone (сборка ${{ github.run_number }})
+          body: |
+            Готовый файл SATL-unsigned.ipa.
+            Устанавливается через Sideloadly с вашим Apple ID.
+          files: build/ios/iphoneos/SATL-unsigned.ipa
